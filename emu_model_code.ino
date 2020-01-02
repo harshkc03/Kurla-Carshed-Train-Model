@@ -4,7 +4,8 @@
  *                                Railways Signalling System                                    *
  *                  =====================================================                       *
  *                                                                                              *
- * -> This code was made as a part of an internship project at Kurla EMU Carshed during 2019.   *
+ * -> This code was made as a part of an internship project at Kurla EMU Carshed during 2019    *  
+ *    under guidance of Mr. Nilesh Lohote.                                                      * 
  *                                                                                              *
  * -> Authors- 1. Harsh Chaudhary                                                               *
  *             2. Khaliluddin Sarkazi                                                           *
