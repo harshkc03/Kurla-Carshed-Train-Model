@@ -1,33 +1,33 @@
 /************************************************************************************************/
 /*                                                                                              *
- *                  =====================================================                       *
- *                                Railways Signalling System                                    *
- *                  =====================================================                       *
+                    =====================================================
+                                  Railways Signalling System
+                    =====================================================
  *                                                                                              *
- * -> This code was made as a part of an internship project at Kurla EMU Carshed during 2019    *  
- *    under guidance of Mr. Nilesh Lohote.                                                      * 
+   -> This code was made as a part of an internship project at Kurla EMU Carshed during 2019
+      under guidance of Mr. Nilesh Lohote.
  *                                                                                              *
- * -> Authors- 1. Harsh Chaudhary                                                               *
- *             2. Khaliluddin Sarkazi                                                           *
- *             3. Ayush Misra                                                                   *
- *             4. Shaikh Owais                                                                  *
+   -> Authors- 1. Harsh Chaudhary
+               2. Khaliluddin Sarkazi
+               3. Ayush Misra
+               4. Shaikh Owais
  *                                                                                              *
- * -> Date of completion - 02/01/2020                                                           *
+   -> Date of completion - 02/01/2020
  *                                                                                              *
- * -> Arduino MEGA 2560 is used as the controlling unit here                                    *
+   -> Arduino MEGA 2560 is used as the controlling unit here
  *                                                                                              *
- * -> One 20x4 LCD display along with push switches are used to make the interface interactive  *
+   -> One 20x4 LCD display along with push switches are used to make the interface interactive
  *                                                                                              *
- * -> Magnetic NO switches are placed before each signal to determine the location of the train *
+   -> Magnetic NO switches are placed before each signal to determine the location of the train
  *                                                                                              *
- * -> Three coloured signals (Green, Yellow, Red) are used here                                 *
+   -> Three coloured signals (Green, Yellow, Red) are used here
  *                                                                                              *
- * -> Two SPDT relays are used to reverse the direction of current in OHE for backward movement *
- *    of the train. One more SPDT relay is used to start or stop the OHE supply                 *
+   -> Two SPDT relays are used to reverse the direction of current in OHE for backward movement
+      of the train. One more SPDT relay is used to start or stop the OHE supply
  *                                                                                              *
- * -> All the 6 interrupts of Arduino MEGA are used in this code                                *
+   -> All the 6 interrupts of Arduino MEGA are used in this code
  *                                                                                              *
-/************************************************************************************************/
+  /************************************************************************************************/
 
 
 #include <LiquidCrystal.h>
@@ -67,7 +67,7 @@ int readIndexf2 = 0;              // the index of the current reading
 int totalf2 = 0;                  // the running total
 int averagef2 = 0;                // the average
 
-const int numReadingsf3 = 5;
+const int numReadingsf3 = 8;
 int readingsf3[numReadingsf3];      // the readings from the analog input
 int readIndexf3 = 0;              // the index of the current reading
 int totalf3 = 0;                  // the running total
@@ -177,7 +177,7 @@ void lcdStartup()
   lcd.print("--------------------");
   lcd.setCursor(1, 3);
   lcd.print("Kurla EMU Carshed");
-  delay(3000);
+  delay(5000);
   lcd.clear();
   lcd.setCursor(1, 0);
   lcd.print("Model Re-built by");
@@ -187,15 +187,17 @@ void lcdStartup()
   lcd.print("Ayush, Owais.");
   lcd.setCursor(3, 3);
   lcd.print("Date: 21/12/19");
-  delay(5000);
+  delay(6000);
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Model Re-built under");
   lcd.setCursor(3, 1);
   lcd.print("guidance of:");
-  lcd.setCursor(1, 3);
+  lcd.setCursor(1, 2);
   lcd.print("Mr. Nilesh Lohote");
-  delay(3000);
+  lcd.setCursor(1, 3);
+  lcd.print("SSE, BTC");
+  delay(5000);
   lcd.clear();
 
 }
@@ -203,30 +205,37 @@ void lcdStartup()
 void loop()
 {
   lcd.clear();
-  lcd.setCursor(0, 2);
   for (int j = 5; j >= 1; j--)
   {
+    lcd.setCursor(0, 2);
     lcd.print("Going Forward in: ");
     lcd.print(j);
     delay(1000);
   }
   forward();
 
+  digitalWrite(23, HIGH);
+  digitalWrite(25, LOW);
   lcd.clear();
-  lcd.setCursor(0, 2);
   for (int i = 5; i >= 1; i--)
   {
+    lcd.setCursor(0, 2);
     lcd.print("Going Reverse in: ");
     lcd.print(i);
     delay(1000);
   }
+  lcd.clear();
+  lcd.home();
   backward();
 }
 
 void forward()
 {
   allGreen();
-  OHE(1, 1);
+  //OHE(1, 1);
+  //OHEf(1);
+  digitalWrite(23, LOW);
+  digitalWrite(25, HIGH);
   lcd.clear();
   lcd.setCursor(1, 1);
   lcd.print("Forward Started....");
@@ -253,7 +262,7 @@ void forward()
       lcd.print("1st Signal crossed");
     }
 
-    if ( ( f2Avg > 1001) && (f2 == 0) )
+    if ( ( f2Avg > 1020) && (f2 == 0) )
     {
       f2Signal('R');
       f1Signal('Y');
@@ -262,7 +271,7 @@ void forward()
       lcd.print("2nd Signal crossed");
     }
 
-    if ( ( f3Avg > 1001) && (f3 == 0) )
+    if ( ( f3Avg > 1015) && (f3 == 0) )
     {
       f3Signal('R');
       f2Signal('Y');
@@ -272,7 +281,7 @@ void forward()
       lcd.print("3rd Signal crossed");
     }
 
-    if ( ( f4Avg > 1001) && (f4 == 0) )
+    if ( ( f4Avg > 800) && (f4 == 0) )
     {
       f4Signal('R');
       f3Signal('Y');
@@ -287,16 +296,18 @@ void forward()
     Serial.print(f3);
     Serial.println(f4);
 
-    if ( (f1 == 1) && (f2 == 1) && (f3 == 1) && (f4 == 1) )
+    if ( (f4 == 1) )
     {
       break;
     }
   }
 
-  if ( (f1 == 1) && (f2 == 1) && (f3 == 1) && (f4 == 1) )
+  if ( (f4 == 1) )
   {
-    delay(4000);
-    OHE(0, 1);
+    delay(7000);
+    //OHE(0, 1);
+    digitalWrite(23, HIGH);
+    digitalWrite(25, LOW);
     Serial.println("OHE off forward");
     f1 = 0;
     f2 = 0;
@@ -316,12 +327,16 @@ void forward()
 void backward()
 {
   allGreen();
-  OHE(1, 0);
+  //OHEb(1);
+  //OHE(1, 0);
+  digitalWrite(23, LOW);
+  //digitalWrite(25, LOW);
   lcd.clear();
-  lcd.setCursor(0, 1);
+  lcd.setCursor(1, 1);
   lcd.print("Backward Started....");
   while (1)
   {
+    digitalWrite(25, LOW);
     b1Avg = getAvgb1();
     b2Avg = getAvgb2();
     b3Avg = getAvgb3();
@@ -381,16 +396,18 @@ void backward()
     Serial.print(b3);
     Serial.println(b4);
 
-    if ( (b1 == 1) && (b2 == 1) && (b3 == 1) && (b4 == 1) )
+    if ( (b4 == 1) )
     {
       break;
     }
   }
 
-  if ( (b1 == 1) && (b2 == 1) && (b3 == 1) && (b4 == 1) )
+  if ( (b4 == 1) )
   {
-    delay(6000);
-    OHE(0, 0);
+    delay(13500);
+    // OHE(0, 0);
+    digitalWrite(23, HIGH);
+    digitalWrite(25, LOW);
     Serial.println("OHE off backward");
     b1 = 0;
     b2 = 0;
@@ -858,24 +875,34 @@ void f2Red()
     {
       f1Signal('R');
       f1 = 1;
-      OHE(0, 1);
+      //OHE(0, 1);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, HIGH);
       break;
     }
     else if (f1 == 1)
     {
-      OHE(0, 1);
+      //OHE(0, 1);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, HIGH);
       break;
     }
 
-    OHE(1, 1);
+    //OHE(1, 1);
+    digitalWrite(23, LOW);
+    digitalWrite(25, HIGH);
     Serial.println("f2 interrupt");
   }
   while (digitalRead(3) == 0)
   {
-    OHE(0, 1);
+    //OHE(0, 1);
+    digitalWrite(23, HIGH);
+    digitalWrite(25, HIGH);
   }
   f2Signal('G');
-  OHE(1, 1);
+  //OHE(1, 1);
+  digitalWrite(23, LOW);
+  digitalWrite(25, HIGH);
   lcd.setCursor(0, 3);
   lcd.print("                    ");
 }
@@ -892,12 +919,16 @@ void f3Red()
       f2Signal('R');
       f1 = 1;
       f2 = 1;
-      OHE(0, 1);
+      //OHE(0, 1);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, HIGH);
       break;
     }
     else if (f2 == 1)
     {
-      OHE(0, 1);
+      //OHE(0, 1);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, HIGH);
       break;
     }
     if (getAvgf1() > 1001)
@@ -910,15 +941,21 @@ void f3Red()
       f1Signal('R');
     }
 
-    OHE(1, 1);
+    //OHE(1, 1);
+    digitalWrite(23, LOW);
+    digitalWrite(25, HIGH);
     Serial.println("f3 interrupt");
   }
   while (digitalRead(2) == 0)
   {
-    OHE(0, 1);
+    //OHE(0, 1);
+    digitalWrite(23, HIGH);
+    digitalWrite(25, HIGH);
   }
   f3Signal('G');
-  OHE(1, 1);
+  //OHE(1, 1);
+  digitalWrite(23, LOW);
+  digitalWrite(25, HIGH);
   lcd.setCursor(0, 3);
   lcd.print("                    ");
 }
@@ -953,26 +990,36 @@ void f4Red()
 
     if ( f3 == 1)
     {
-      OHE(0, 1);
+      //OHE(0, 1);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, HIGH);
       break;
     }
     else if ( getAvgf3() > 1001)
     {
       f3Signal('R');
       f3 = 1;
-      OHE(0, 1);
+      //OHE(0, 1);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, HIGH);
       break;
     }
 
-    OHE(1, 1);
+    //OHE(1, 1);
+    digitalWrite(23, LOW);
+    digitalWrite(25, HIGH);
     Serial.println("f4 interrupt");
   }
   while ( digitalRead(18) == 0)
   {
-    OHE(0, 1);
+    //OHE(0, 1);
+    digitalWrite(23, HIGH);
+    digitalWrite(25, HIGH);
   }
   f4Signal('G');
-  OHE(1, 1);
+  //OHE(1, 1);
+  digitalWrite(23, LOW);
+  digitalWrite(25, HIGH);
   lcd.setCursor(0, 3);
   lcd.print("                    ");
 }
@@ -987,25 +1034,35 @@ void b2Red()
 
     if ( b1 == 1)
     {
-      OHE(0, 0);
+      //OHE(0, 0);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, LOW);
       break;
     }
     else if ( getAvgb1() > 1001)
     {
       b1Signal('R');
       b1 = 1;
-      OHE(0, 0);
+      //OHE(0, 0);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, LOW);
       break;
     }
-    OHE(1, 0);
+    //OHE(1, 0);
+    digitalWrite(23, LOW);
+    digitalWrite(25, LOW);
     Serial.println("b2 interrupt");
   }
   while (digitalRead(19) == 0)
   {
-    OHE(0, 0);
+    //OHE(0, 0);
+    digitalWrite(23, HIGH);
+    digitalWrite(25, LOW);
   }
   b2Signal('G');
-  OHE(1, 0);
+  //OHE(1, 0);
+  digitalWrite(23, LOW);
+  digitalWrite(25, LOW);
   lcd.setCursor(0, 3);
   lcd.print("                    ");
 }
@@ -1030,25 +1087,35 @@ void b3Red()
 
     if ( b2 == 1)
     {
-      OHE(0, 0);
+      //OHE(0, 0);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, LOW);
       break;
     }
     else if (getAvgb2() > 1001)
     {
       b2Signal('R');
       b2 = 1;
-      OHE(0, 0);
+      //OHE(0, 0);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, LOW);
       break;
     }
-    OHE(1, 0);
+    //OHE(1, 0);
+    digitalWrite(23, LOW);
+    digitalWrite(25, LOW);
     Serial.println("b3 interrupt");
   }
   while (digitalRead(20) == 0)
   {
-    OHE(1, 0);
+    //OHE(1, 0);
+    digitalWrite(23, HIGH);
+    digitalWrite(25, LOW);
   }
   b3Signal('G');
-  OHE(1, 0);
+  //OHE(1, 0);
+  digitalWrite(23, LOW);
+  digitalWrite(25, LOW);
   lcd.setCursor(0, 3);
   lcd.print("                    ");
 }
@@ -1083,50 +1150,35 @@ void b4Red()
 
     if (b3 == 1)
     {
-      OHE(0, 0);
+      //OHE(0, 0);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, LOW);
       break;
     }
     else if (getAvgb3() > 1001)
     {
       b3Signal('R');
       b3 = 1;
-      OHE(0, 0);
+      //OHE(0, 0);
+      digitalWrite(23, HIGH);
+      digitalWrite(25, LOW);
       break;
     }
-    OHE(1, 0);
+    //OHE(1, 0);
+    digitalWrite(23, LOW);
+    digitalWrite(25, LOW);
     Serial.println("b4 interrupt");
   }
   while (digitalRead(21) == 0)
   {
-    OHE(0, 0);
-  }
-  b4Signal('G');
-  OHE(1, 0);
-  lcd.setCursor(0, 3);
-  lcd.print("                    ");
-}
-
-void OHE(int supply, int dir)  // supply-> 0 for off, 1 for on & dir-> 1 for forward, 0 for backward
-{
-  if ( supply == 0 )
-  {
-    Serial.println("OHE low");
+    //OHE(0, 0);
     digitalWrite(23, HIGH);
-  }
-  else if ( supply == 1)
-  {
-    Serial.println("OHE high");
-    digitalWrite(23, LOW);
-  }
-
-  if ( dir == 1 )
-  {
-    Serial.println("OHE forward");
-    digitalWrite(25, HIGH);
-  }
-  else if ( dir == 0 )
-  {
-    Serial.println("OHE backward");
     digitalWrite(25, LOW);
   }
+  b4Signal('G');
+  //OHE(1, 0);
+  digitalWrite(23, LOW);
+  digitalWrite(25, LOW);
+  lcd.setCursor(0, 3);
+  lcd.print("                    ");
 }
