@@ -19,9 +19,7 @@
     * Two SPDT relays are used to reverse the direction of current in OHE for backward movement of the train. One more SPDT relay is used to start or stop the OHE supply
     * All the 6 interrupts of Arduino MEGA are used in this code
   
-  ## Working video-
-  
-  ![Train video](https://www.youtube.com/watch?v=K29B_VmnoXo)
+  ## Working video- ![Link](https://www.youtube.com/watch?v=K29B_VmnoXo)
   
   ## Track Image-
   
